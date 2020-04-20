@@ -1,5 +1,6 @@
-
+//uso de la base de datos
 import { Schema, model, Document } from 'mongoose';
+//Paquete de encriptado
 import bcrypt from 'bcrypt';
 
 
@@ -34,6 +35,8 @@ usuarioSchema.method('compararPassword', function( password:string = '' ):boolea
     }
 });
 
+
+//Permite que tengas una "documentación" de la clase que has crado y visualStudio te ayude a usar los objetos que vayas creando
 interface IUsuario extends Document {
     nombre: string;
     email: string;

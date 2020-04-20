@@ -1,7 +1,8 @@
 import { Router, Request, Response } from 'express';
-import { Usuario } from '../models/usuario.model';
 import bcrypt from 'bcrypt';
+
 import Token from '../classes/token';
+import { Usuario } from '../models/usuario.model';
 import { verificaToken } from '../middlewares/autenticacion';
 
 
@@ -47,11 +48,10 @@ userRoutes.post('/login',(req: Request, res:Response) =>{
 
 });
 
-
-
 //Crear un usuario
 userRoutes.post('/create', (req: Request,res: Response)=>{
     
+    //obtienes la información que entra por el request. lo guardas en la variable user
     const user = {
         nombre: req.body.nombre ,
         email: req.body.email,
@@ -59,14 +59,23 @@ userRoutes.post('/create', (req: Request,res: Response)=>{
         avatar: req.body.avatar
     }
 
-    Usuario.create( user).then( (userDB: any)=>{
+
+     // --mongoose documentation--
+     /**
+     * Shortcut for saving one or more documents to the database. MyModel.create(docs)
+     * does new MyModel(doc).save() for every doc in docs.
+     * Triggers the save() hook.
+     */
+    //Guardas la variable en la base de datos y te devuelve userDB (la informacion que esta en la base de datos)
+    Usuario.create( user ).then( (userDB: any)=>{
+        //Transformas a los usuarios en el token correspondiente.
         const tokenUser = Token.getJwtToken({
             _id: userDB._id,
             nombre:userDB.nombre,
             email:userDB.email,
             avatar:userDB.avatar
         });
-       
+       //Devuelves el ok y el token del usuario.
        res.json({
            ok:true,
            token: tokenUser
@@ -91,7 +100,6 @@ userRoutes.post('/update', verificaToken, (req:any, res: Response)=>{
         email:  req.body.email || req.usuario.email,
         avatar: req.body.avatar || req.usuario.avatar
     }
-    console.log(user);
     Usuario.findByIdAndUpdate( req.usuario._id, user, { new:true }, (err,userDB)=>{
 
         if( err ) throw err;

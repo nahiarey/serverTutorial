@@ -4,9 +4,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
-const usuario_model_1 = require("../models/usuario.model");
 const bcrypt_1 = __importDefault(require("bcrypt"));
 const token_1 = __importDefault(require("../classes/token"));
+const usuario_model_1 = require("../models/usuario.model");
 const autenticacion_1 = require("../middlewares/autenticacion");
 const userRoutes = express_1.Router();
 //Login
@@ -43,19 +43,29 @@ userRoutes.post('/login', (req, res) => {
 });
 //Crear un usuario
 userRoutes.post('/create', (req, res) => {
+    //obtienes la información que entra por el request. lo guardas en la variable user
     const user = {
         nombre: req.body.nombre,
         email: req.body.email,
         password: bcrypt_1.default.hashSync(req.body.password, 10),
         avatar: req.body.avatar
     };
+    // --mongoose documentation--
+    /**
+    * Shortcut for saving one or more documents to the database. MyModel.create(docs)
+    * does new MyModel(doc).save() for every doc in docs.
+    * Triggers the save() hook.
+    */
+    //Guardas la variable en la base de datos y te devuelve userDB (la informacion que esta en la base de datos)
     usuario_model_1.Usuario.create(user).then((userDB) => {
+        //Transformas a los usuarios en el token correspondiente.
         const tokenUser = token_1.default.getJwtToken({
             _id: userDB._id,
             nombre: userDB.nombre,
             email: userDB.email,
             avatar: userDB.avatar
         });
+        //Devuelves el ok y el token del usuario.
         res.json({
             ok: true,
             token: tokenUser
@@ -74,7 +84,6 @@ userRoutes.post('/update', autenticacion_1.verificaToken, (req, res) => {
         email: req.body.email || req.usuario.email,
         avatar: req.body.avatar || req.usuario.avatar
     };
-    console.log(user);
     usuario_model_1.Usuario.findByIdAndUpdate(req.usuario._id, user, { new: true }, (err, userDB) => {
         if (err)
             throw err;
